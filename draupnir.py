@@ -6,12 +6,13 @@ import urllib
 import sys
 import datetime
 
+#----------------------------------Main Class---------------------------------
 class Draupnir:
 
     IMGUR_PATTERN = re.compile("((http)|(https))(:\/\/i\.imgur\.com\/).*")
     IREDDIT_PATTERN = re.compile("((http)|(https))(:\/\/i\.redd\.it\/).*")
     REDDIT_UPLOADS_PATTERN = re.compile("((http)|(https))(:\/\/i\.reddituploads\.com\/).*")
-    GIF_PATTERN = re.compile(".*(\.gif[^v])")
+    GIF_PATTERN = re.compile(".*(\.gif$)")
     GIFV_PATTERN = re.compile(".*(\.gifv)")
     JPG_PATTERN = re.compile(".*(\.jpg)")
 
@@ -22,16 +23,12 @@ class Draupnir:
         self.bot = telepot.Bot(self.TOKEN)
 
     def start(self):
-        self.f = open("urls.log", "w")
         try:
-            print(self.TOKEN)
             self.bot.message_loop(self.handle)
             while 1:
                 time.sleep(10)
         except KeyboardInterrupt:
-            self.f.close()
             sys.exit()
-
 
     def read_config(self):
         config = open("config.ini", "r")
@@ -52,78 +49,80 @@ class Draupnir:
             print("Malformatted config file")
             sys.exit()
 
-    def writeUrls(self, url_input_list):
-        for url in url_input_list:
-            self.f.write(url + "\n")
-
     def is_subreddit(self, subreddit_string):
         subreddits = []
         try:
             for s in self.reddit.subreddits.search_by_name(subreddit_string, exact=True):
                 subreddits.append(s)
-            if subreddits != []:
+            if subreddits:
                 return True
             else:
                 return False
         except:
             return False
 
-    def parse_urls(self, url_input_list):
-        for url in url_input_list:
-            print(url)
-            if self.IMGUR_PATTERN.match(url) == None and self.IREDDIT_PATTERN.match(url) == None and self.REDDIT_UPLOADS_PATTERN.match(url) == None:
-                continue
-            if self.GIF_PATTERN.match(url) != None:
-                return (url, ".gif")
-            elif self.GIFV_PATTERN.match(url) != None:
-                print(url)
-                new_url = re.sub("gifv", "gif", url)
-                print(new_url)
-                return (new_url, ".gif")
-            elif self.JPG_PATTERN.match(url) != None:
-                return (url, ".jpg")
-            else:
-                return (url, ",jpg")
-        return None
+    def parse_url(self, url):
+        print(url)
+        if self.IMGUR_PATTERN.match(url) == None and self.IREDDIT_PATTERN.match(url) == None and self.REDDIT_UPLOADS_PATTERN.match(url) == None:
+            return None
+        elif self.GIF_PATTERN.match(url) != None:
+            return (url, ".gif")
+        elif self.GIFV_PATTERN.match(url) != None:
+            new_url = re.sub("gifv", "gif", url)
+            print("(" + new_url + ")")
+            return (new_url, ".gif")
+        elif self.JPG_PATTERN.match(url) != None:
+            return (url, ".jpg")
+        else:
+            return (url, ".jpg")
 
-
-    def generate_image_for_subreddit(self, subreddit_string):
+    def generate_images_for_subreddit(self, subreddit_string):
         subreddit = self.reddit.subreddit(subreddit_string)
-        url_input_list = []
+        self.image_list = []
 
         for sub in subreddit.hot(limit=10):
-            url_input_list.append(str(sub.url))
+            output = self.parse_url(str(sub.url))
+            if output != None:
+                self.image_list.append(output)
+            if len(self.image_list) >= 3:
+                break;
 
-        if self.f != None:
-            self.writeUrls(url_input_list)
-        else:
-            print("Couldn't write log")
-
-        parsed_url = self.parse_urls(url_input_list)
-
-        if parsed_url != None:
-            return urllib.request.urlopen(parsed_url[0]), parsed_url[1]
+        if self.image_list:
+            #self.image_list = urllib.request.urlopen(image_list[0][0]), image_list[0][1]
+            return True
         else:
             print("No images available")
-            return None, None
+            return False
 
     def handle(self, msg):
         content_type, chat_type, chat_id = telepot.glance(msg)
         caption = msg["text"].strip("/")
 
         if self.is_subreddit(caption) != False:
-            image, filetype = self.generate_image_for_subreddit(caption)
-            if image != None:
+            got_images = self.generate_images_for_subreddit(caption)
+
+            if got_images == True:
+                filetype = self.image_list[0][1]
+                print(filetype)
+                image = urllib.request.urlopen(self.image_list[0][0])
+                print("Done opening")
+
                 if filetype == ".gif":
                     self.bot.sendDocument(chat_id, (caption + filetype, image))
-                else:
+                elif filetype == ".jpg":
                     self.bot.sendPhoto(chat_id, (caption + filetype, image))
+                else:
+                    print("Don't know how to send this")
+                print("Done sending")
+            
         else:
             print("No subreddits with this name")
+#------------------------------------------------------------------
 
+#------------------------------Main--------------------------------
 def main():
-	draupnir = Draupnir()
-	draupnir.start()
+    draupnir = Draupnir()
+    draupnir.start()
 
 if __name__ == "__main__":
-	main()
+    main()
