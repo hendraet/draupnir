@@ -121,3 +121,9 @@ class Draupnir:
         else:
             print("No subreddits with this name")
 
+def main():
+	draupnir = Draupnir()
+	draupnir.start()
+
+if __name__ == "__main__":
+	main()
