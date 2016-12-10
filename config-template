@@ -1,0 +1,4 @@
+TOKEN=[token of Telegram bot]
+USER_AGENT=[user agent, e.g. linux:com.example.draupnir:0.1 (by /u/abctest)]
+CLIENT_ID=[client id given by reddit]
+CLIENT_SECRET=[secret client key given by reddit]
