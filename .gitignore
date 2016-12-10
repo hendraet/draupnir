@@ -1,0 +1,8 @@
+config.ini
+config-sample.ini
+bin/
+lib/
+*.pyc
+urls.log
+pip-selfcheck.json
+todos.md
