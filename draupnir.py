@@ -104,7 +104,7 @@ class Draupnir:
             if got_images == True:
                 filetype = self.image_list[0][1]
                 print(filetype)
-                image = urllib.request.urlopen(self.image_list[0][0])
+                image = urllib.urlopen(self.image_list[0][0])
                 print("Done opening")
 
                 if filetype == ".gif":

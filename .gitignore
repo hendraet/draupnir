@@ -2,6 +2,7 @@ config.ini
 config-sample.ini
 bin/
 lib/
+share/
 *.pyc
 urls.log
 pip-selfcheck.json
