@@ -3,6 +3,8 @@ config-sample.ini
 bin/
 lib/
 share/
+include/
+local/
 *.pyc
 urls.log
 pip-selfcheck.json
