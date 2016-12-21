@@ -91,12 +91,10 @@ class Draupnir:
             if len(self.image_list) >= 3:
                 break;
 
-        print(len(self.image_list), self.image_list[0])
-
         if self.image_list:
+            print(len(self.image_list), self.image_list[0])
             return True
         else:
-            print("No images available")
             return False
 
     def send_image_for_subreddit(self, subreddit, chat_id):
@@ -114,12 +112,15 @@ class Draupnir:
                 elif filetype == ".jpg":
                     self.bot.sendPhoto(chat_id, (subreddit + filetype, image))
                 else:
+                    self.bot.sendMessage(chat_id, "Can't send file because filetype is unknown")
                     print("Don't know how to send this")
                 print("Done sending")
             else:
+                self.bot.sendMessage(chat_id, "Couldn't load any images from this subreddit")
                 print("Couldn't load any images")
 
         else:
+            self.bot.sendMessage(chat_id, "No subreddits with this name")
             print("No subreddits with this name")
 
     #------------------------------Daily/Special---------------------------------
