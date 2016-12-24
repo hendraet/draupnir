@@ -9,12 +9,14 @@ import datetime
 #----------------------------------Main Class---------------------------------
 class Draupnir:
 
-    IMGUR_PATTERN = re.compile("((http)|(https))(:\/\/i\.imgur\.com\/).*")
+    IIMGUR_PATTERN = re.compile("((http)|(https))(:\/\/i\.imgur\.com\/).*")
+    IMGUR_PATTERN = re.compile("((http)|(https))(:\/\/imgur\.com\/).*")
     IREDDIT_PATTERN = re.compile("((http)|(https))(:\/\/i\.redd\.it\/).*")
     REDDIT_UPLOADS_PATTERN = re.compile("((http)|(https))(:\/\/i\.reddituploads\.com\/).*")
     GIF_PATTERN = re.compile(".*(\.gif$)")
-    GIFV_PATTERN = re.compile(".*(\.gifv)")
+    GIFV_PATTERN = re.compile(".*(\.gifv$)")
     JPG_PATTERN = re.compile(".*(\.jpg)")
+    DEFAULT_METHOD = "hot"
 
     #-----------------------------Init----------------------------------------
     def __init__(self):
@@ -68,23 +70,34 @@ class Draupnir:
             return False
 
     def parse_url(self, url):
-        if self.IMGUR_PATTERN.match(url) == None and self.IREDDIT_PATTERN.match(url) == None and self.REDDIT_UPLOADS_PATTERN.match(url) == None:
+        if self.IIMGUR_PATTERN.match(url) == None and self.IREDDIT_PATTERN.match(url) == None and self.REDDIT_UPLOADS_PATTERN.match(url) == None:
             return None
-        elif self.GIF_PATTERN.match(url) != None:
+        elif self.GIF_PATTERN.match(url):
             return (url, ".gif")
-        elif self.GIFV_PATTERN.match(url) != None:
+        elif self.GIFV_PATTERN.match(url):
             new_url = re.sub("gifv", "gif", url)
             return (new_url, ".gif")
-        elif self.JPG_PATTERN.match(url) != None:
+        elif self.JPG_PATTERN.match(url):
             return (url, ".jpg")
         else:
             return (url, ".jpg")
 
-    def generate_images_for_subreddit(self, subreddit_string):
+    def generate_hot_image_list(self, subreddit):
+        return subreddit.hot(limit=10)
+
+    def generate_top_image_list(self, subreddit):
+        return subreddit.top(limit=10, time_filter="day")
+
+    def generate_images_for_subreddit(self, subreddit_string, method):
         subreddit = self.reddit.subreddit(subreddit_string)
         self.image_list = []
 
-        for sub in subreddit.hot(limit=10):
+        if method == "top":
+            raw_image_list = self.generate_top_image_list(subreddit)
+        else:
+            raw_image_list = self.generate_hot_image_list(subreddit)
+        
+        for sub in raw_image_list:
             output = self.parse_url(str(sub.url))
             if output != None:
                 self.image_list.append(output)
@@ -97,9 +110,9 @@ class Draupnir:
         else:
             return False
 
-    def send_image_for_subreddit(self, subreddit, chat_id):
+    def send_image_for_subreddit(self, subreddit, chat_id, method):
         if self.is_subreddit(subreddit) != False:
-            got_images = self.generate_images_for_subreddit(subreddit)
+            got_images = self.generate_images_for_subreddit(subreddit, method)
 
             if got_images == True:
                 filetype = self.image_list[0][1]
@@ -123,6 +136,14 @@ class Draupnir:
             self.bot.sendMessage(chat_id, "No subreddits with this name")
             print("No subreddits with this name")
 
+    def parse_message(self, message):
+        message = message.lstrip("/")
+        arg_list = message.split("/")
+        if len(arg_list) == 2 and (arg_list[1] == "hot" or arg_list[1] == "top"):
+            return arg_list[0], arg_list[1]
+        else:
+            return arg_list[0], self.DEFAULT_METHOD 
+
     #------------------------------Daily/Special---------------------------------
     def send_special(self):
         chat_list = open("chatlist.txt", "r")
@@ -135,9 +156,11 @@ class Draupnir:
     def handle(self, msg):
         content_type, chat_type, chat_id = telepot.glance(msg)
         print(chat_id)
-        caption = msg["text"].strip("/")
+        self.parse_message(msg["text"])
+        caption, method = self.parse_message(msg["text"])
+        print(caption, method)
 
-        self.send_image_for_subreddit(caption, chat_id)
+        self.send_image_for_subreddit(caption, chat_id, method)
 
 #------------------------------------------------------------------
 
