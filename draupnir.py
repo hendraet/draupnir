@@ -150,7 +150,7 @@ class Draupnir:
         for line in chat_list.readlines():
             line = line.rstrip()
             chat_id, subreddit = line.split(":")
-            self.send_image_for_subreddit(subreddit, chat_id)
+            self.send_image_for_subreddit(subreddit, chat_id, self.DEFAULT_METHOD)
 
     #------------------------------Normal Handle---------------------------------
     def handle(self, msg):
