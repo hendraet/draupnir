@@ -80,7 +80,7 @@ class Draupnir:
         elif self.JPG_PATTERN.match(url):
             return (url, ".jpg")
         else:
-            return (url, ".jpg")
+            return None
 
     def generate_hot_image_list(self, subreddit):
         return subreddit.hot(limit=10)
