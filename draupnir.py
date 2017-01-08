@@ -17,6 +17,7 @@ class Draupnir:
     GIFV_PATTERN = re.compile(".*(\.gifv$)")
     JPG_PATTERN = re.compile(".*(\.jpg)")
     DEFAULT_METHOD = "hot"
+    TOP = [ "all", "year", "month", "week", "day" ]
 
     #-----------------------------Init----------------------------------------
     def __init__(self):
@@ -83,10 +84,10 @@ class Draupnir:
             return None
 
     def generate_hot_image_list(self, subreddit):
-        return subreddit.hot(limit=10)
+        return subreddit.hot(limit=50)
 
     def generate_top_image_list(self, subreddit):
-        return subreddit.top(limit=10, time_filter="day")
+        return subreddit.top(limit=50, time_filter="day")
 
     def generate_images_for_subreddit(self, subreddit_string, method):
         subreddit = self.reddit.subreddit(subreddit_string)
@@ -139,7 +140,7 @@ class Draupnir:
     def parse_message(self, message):
         message = message.lstrip("/")
         arg_list = message.split("/")
-        if len(arg_list) == 2 and (arg_list[1] == "hot" or arg_list[1] == "top"):
+        if len(arg_list) == 2 and (arg_list[1] == "hot" or arg_list[1] == "all" ):
             return arg_list[0], arg_list[1]
         else:
             return arg_list[0], self.DEFAULT_METHOD 
