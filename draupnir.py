@@ -2,7 +2,7 @@ import telepot
 import time
 import praw
 import re
-import urllib
+import urllib.request
 import sys
 import datetime
 
@@ -93,13 +93,13 @@ class Draupnir:
         return subreddit.hot(limit=50)
 
     def generate_top_image_list(self, subreddit):
-        return subreddit.top(limit=50, time_filter="day")
+        return subreddit.top(limit=50, time_filter="all")
 
     def generate_images_for_subreddit(self, subreddit_string, method):
         subreddit = self.reddit.subreddit(subreddit_string)
         self.image_list = []
 
-        if method == "top":
+        if method == "all":
             raw_image_list = self.generate_top_image_list(subreddit)
         else:
             raw_image_list = self.generate_hot_image_list(subreddit)
@@ -112,7 +112,7 @@ class Draupnir:
                 break;
 
         if self.image_list:
-            print("length of image list:", len(self.image_list), "first image url:", self.image_list[0])
+            print("length of image list:", len(self.image_list), "image url:", self.image_list)
             return True
         else:
             return False
@@ -124,7 +124,7 @@ class Draupnir:
             if got_images == True:
                 filetype = self.image_list[0][1]
                 print("filetype:", filetype)
-                image = urllib.urlopen(self.image_list[0][0])
+                image = urllib.request.urlopen(self.image_list[0][0])
                 print("Done opening")
 
                 if filetype == ".gif":
