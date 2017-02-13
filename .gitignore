@@ -6,7 +6,7 @@ share/
 include/
 local/
 *.pyc
-urls.log
+*.log
 pip-selfcheck.json
 todos.md
 *.txt
