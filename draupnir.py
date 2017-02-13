@@ -125,7 +125,6 @@ class Draupnir:
             if got_images == True:
 
                 image = None
-                self.image_list[0] = ("a", "n")
                 for i in range(0, len(self.image_list)):
                     filetype = self.image_list[i][1]
                     print("filetype:", filetype)
