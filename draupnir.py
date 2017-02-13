@@ -27,7 +27,7 @@ class Draupnir:
         self.bot = telepot.Bot(self.TOKEN)
 
     def start(self, arg_list):
-        print(arg_list)
+        print("argument list:", arg_list)
         if len(arg_list) > 1 and arg_list[1] == "daily":
             self.send_special()
         else:
@@ -56,6 +56,12 @@ class Draupnir:
         except KeyError:
             print("Malformatted config file")
             sys.exit()
+
+        if config_dict["DEBUG_CHAT"] == "":
+            self.DEBUG_CHAT = ""
+            print("No debug chat specified.")
+        else:
+            self.DEBUG_CHAT = str(config_dict["DEBUG_CHAT"])
 
     #-----------------------------General--------------------------------------
     def is_subreddit(self, subreddit_string):
@@ -97,7 +103,7 @@ class Draupnir:
             raw_image_list = self.generate_top_image_list(subreddit)
         else:
             raw_image_list = self.generate_hot_image_list(subreddit)
-        
+
         for sub in raw_image_list:
             output = self.parse_url(str(sub.url))
             if output != None:
@@ -106,7 +112,7 @@ class Draupnir:
                 break;
 
         if self.image_list:
-            print(len(self.image_list), self.image_list[0])
+            print("length of image list:", len(self.image_list), "first image url:", self.image_list[0])
             return True
         else:
             return False
@@ -117,7 +123,7 @@ class Draupnir:
 
             if got_images == True:
                 filetype = self.image_list[0][1]
-                print(filetype)
+                print("filetype:", filetype)
                 image = urllib.urlopen(self.image_list[0][0])
                 print("Done opening")
 
@@ -127,7 +133,7 @@ class Draupnir:
                     self.bot.sendPhoto(chat_id, (subreddit + filetype, image))
                 else:
                     self.bot.sendMessage(chat_id, "Can't send file because filetype is unknown")
-                    print("Don't know how to send this")
+                    print("Can't send file because filetype is unknown")
                 print("Done sending")
             else:
                 self.bot.sendMessage(chat_id, "Couldn't load any images from this subreddit")
@@ -143,7 +149,7 @@ class Draupnir:
         if len(arg_list) == 2 and (arg_list[1] == "hot" or arg_list[1] == "all" ):
             return arg_list[0], arg_list[1]
         else:
-            return arg_list[0], self.DEFAULT_METHOD 
+            return arg_list[0], self.DEFAULT_METHOD
 
     #------------------------------Daily/Special---------------------------------
     def send_special(self):
@@ -156,10 +162,10 @@ class Draupnir:
     #------------------------------Normal Handle---------------------------------
     def handle(self, msg):
         content_type, chat_type, chat_id = telepot.glance(msg)
-        print(chat_id)
+        print("chat_id:", chat_id)
         self.parse_message(msg["text"])
         caption, method = self.parse_message(msg["text"])
-        print(caption, method)
+        print("subreddit-caption:", caption, "method:", method)
 
         self.send_image_for_subreddit(caption, chat_id, method)
 
