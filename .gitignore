@@ -13,5 +13,6 @@ config.ini
 config-sample.ini
 todos.md
 draupnir2_7.py
+test.py
 
 !requirements.txt

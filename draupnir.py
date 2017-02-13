@@ -5,6 +5,7 @@ import re
 import urllib.request
 import sys
 import datetime
+import traceback
 
 #----------------------------------Main Class---------------------------------
 class Draupnir:
@@ -124,6 +125,7 @@ class Draupnir:
             if got_images == True:
 
                 image = None
+                self.image_list[0] = ("a", "n")
                 for i in range(0, len(self.image_list)):
                     filetype = self.image_list[i][1]
                     print("filetype:", filetype)
@@ -131,6 +133,15 @@ class Draupnir:
                         image = urllib.request.urlopen(self.image_list[i][0])
                     except Exception as e:
                         print(e, "\n" + "Failed opening " + str(i+1) + ". image" )
+                        err_type, err_value, err_traceback = sys.exc_info()
+                        formatted_traceback = traceback.format_tb(err_traceback)
+
+                        self.bot.sendMessage(self.DEBUG_CHAT, "An error occured\n" + 
+                                "Couldn't load image\n\n" + 
+                                formatted_traceback[0] + 
+                                str(e) + "\n\n" +
+                                "Filetype: " + filetype + "\n"
+                                "URL: " + self.image_list[i][0])
                         continue
                     break
 
@@ -139,7 +150,6 @@ class Draupnir:
                     return
 
                 print("Done opening")
-                print(image)
 
                 if filetype == ".gif":
                     self.bot.sendDocument(chat_id, (subreddit + filetype, image))
