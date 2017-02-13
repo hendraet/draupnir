@@ -108,7 +108,7 @@ class Draupnir:
             output = self.parse_url(str(sub.url))
             if output != None:
                 self.image_list.append(output)
-            if len(self.image_list) >= 3:
+            if len(self.image_list) >= 5:
                 break;
 
         if self.image_list:
@@ -122,10 +122,24 @@ class Draupnir:
             got_images = self.generate_images_for_subreddit(subreddit, method)
 
             if got_images == True:
-                filetype = self.image_list[0][1]
-                print("filetype:", filetype)
-                image = urllib.request.urlopen(self.image_list[0][0])
+
+                image = None
+                for i in range(0, len(self.image_list)):
+                    filetype = self.image_list[i][1]
+                    print("filetype:", filetype)
+                    try:
+                        image = urllib.request.urlopen(self.image_list[i][0])
+                    except Exception as e:
+                        print(e, "\n" + "Failed opening " + str(i+1) + ". image" )
+                        continue
+                    break
+
+                if image == None:
+                    print("Couldn't open any images")
+                    return
+
                 print("Done opening")
+                print(image)
 
                 if filetype == ".gif":
                     self.bot.sendDocument(chat_id, (subreddit + filetype, image))
