@@ -1,7 +1,7 @@
 # Draupnir
 
 ## Description
-**Draupnir** is a Telegram bot for downloading the "hottest" pictures from a given subreddit.
+**Draupnir** is a Telegram bot for downloading pictures which are currently at the top of the hot list of a given subreddit.
 
 ## Getting Started
 **If you want to use this code for your own bot you have to register your own telegram bot and also register your application at reddit**
