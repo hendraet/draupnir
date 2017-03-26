@@ -7,6 +7,7 @@ import sys
 import datetime
 import traceback
 
+
 #----------------------------------Main Class---------------------------------
 class Draupnir:
 
@@ -19,7 +20,7 @@ class Draupnir:
     GIFV_PATTERN = re.compile(".*(\.gifv$)")
     JPG_PATTERN = re.compile(".*(\.jpg)")
     DEFAULT_METHOD = "hot"
-    TOP = [ "all", "year", "month", "week", "day" ]
+    TOP = ["all", "year", "month", "week", "day"]
 
     #-----------------------------Init----------------------------------------
     def __init__(self):
@@ -73,7 +74,6 @@ class Draupnir:
                 return True
         return False
 
-
     def log_urls(self, url_list):
         logfile = open("urls.log", "w+")
         try:
@@ -83,7 +83,6 @@ class Draupnir:
                     logfile.write(sub.url + "\n")
         finally:
             logfile.close()
-
 
     #-----------------------------General--------------------------------------
     def is_subreddit(self, subreddit_string):
@@ -99,7 +98,7 @@ class Draupnir:
             return False
 
     def parse_url(self, url):
-        if self.IIMGUR_PATTERN.match(url) == None and self.IREDDIT_PATTERN.match(url) == None and self.REDDIT_UPLOADS_PATTERN.match(url) == None:
+        if self.IIMGUR_PATTERN.match(url) is None and self.IREDDIT_PATTERN.match(url) is None and self.REDDIT_UPLOADS_PATTERN.match(url) is None:
             return None
         elif self.GIF_PATTERN.match(url):
             return (url, ".gif")
@@ -128,10 +127,10 @@ class Draupnir:
 
         for sub in raw_image_list:
             output = self.parse_url(str(sub.url))
-            if output != None:
+            if output is not None:
                 self.image_list.append(output)
             if len(self.image_list) >= 5:
-                break;
+                break
 
         self.log_urls(raw_image_list)
 
@@ -143,10 +142,10 @@ class Draupnir:
             return False
 
     def send_image_for_subreddit(self, subreddit, chat_id, method):
-        if self.is_subreddit(subreddit) != False:
+        if self.is_subreddit(subreddit) is not False:
             got_images = self.generate_images_for_subreddit(subreddit, method)
 
-            if got_images == True:
+            if got_images is True:
 
                 image = None
                 for i in range(0, len(self.image_list)):
@@ -155,20 +154,21 @@ class Draupnir:
                     try:
                         image = urllib.request.urlopen(self.image_list[i][0])
                     except Exception as e:
-                        print(e, "\n" + "Failed opening " + str(i+1) + ". image" )
+                        print(e, "\n" + "Failed opening " + str(i+1) + ". image")
                         err_type, err_value, err_traceback = sys.exc_info()
                         formatted_traceback = traceback.format_tb(err_traceback)
 
-                        self.bot.sendMessage(self.DEBUG_CHAT, "An error occured\n" +
-                                "Couldn't load image\n\n" +
-                                formatted_traceback[0] +
-                                str(e) + "\n\n" +
-                                "Filetype: " + filetype + "\n"
-                                "URL: " + self.image_list[i][0])
+                        self.bot.sendMessage(
+                            self.DEBUG_CHAT, "An error occured\n" +
+                            "Couldn't load image\n\n" +
+                            formatted_traceback[0] +
+                            str(e) + "\n\n" +
+                            "Filetype: " + filetype + "\n"
+                            "URL: " + self.image_list[i][0])
                         continue
                     break
 
-                if image == None:
+                if image is None:
                     print("Couldn't open any images")
                     return
 
@@ -193,7 +193,7 @@ class Draupnir:
     def parse_message(self, message):
         message = message.lstrip("/")
         arg_list = message.split("/")
-        if len(arg_list) == 2 and (arg_list[1] == "hot" or arg_list[1] == "all" ):
+        if len(arg_list) == 2 and (arg_list[1] == "hot" or arg_list[1] == "all"):
             return arg_list[0], arg_list[1]
         else:
             return arg_list[0], self.DEFAULT_METHOD
@@ -216,7 +216,6 @@ class Draupnir:
 
         self.send_image_for_subreddit(caption, chat_id, method)
 
-#------------------------------------------------------------------
 
 #------------------------------Main--------------------------------
 def main(arg_list):
