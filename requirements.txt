@@ -1,2 +1,2 @@
-telepot==10.4
-praw==4.3.0
+telepot==10.5
+praw==4.4.0
