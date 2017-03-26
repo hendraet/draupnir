@@ -10,6 +10,7 @@ import traceback
 #----------------------------------Main Class---------------------------------
 class Draupnir:
 
+    URL_PATTERN = re.compile("^((http[s]?|ftp):\/)?\/?([^:\/\s]+)((\/\w+)*\/)([\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$")
     IIMGUR_PATTERN = re.compile("((http)|(https))(:\/\/i\.imgur\.com\/).*")
     IMGUR_PATTERN = re.compile("((http)|(https))(:\/\/imgur\.com\/).*")
     IREDDIT_PATTERN = re.compile("((http)|(https))(:\/\/i\.redd\.it\/).*")
@@ -64,6 +65,26 @@ class Draupnir:
         else:
             self.DEBUG_CHAT = str(config_dict["DEBUG_CHAT"])
 
+    #-----------------------------Logging--------------------------------------
+
+    def search_file(self, f, string):
+        for line in f:
+            if string in line:
+                return True
+        return False
+
+
+    def log_urls(self, url_list):
+        logfile = open("urls.log", "w+")
+        try:
+            for sub in url_list:
+                #strip
+                if not self.search_file(logfile, sub.url):
+                    logfile.write(sub.url + "\n")
+        finally:
+            logfile.close()
+
+
     #-----------------------------General--------------------------------------
     def is_subreddit(self, subreddit_string):
         subreddits = []
@@ -112,8 +133,11 @@ class Draupnir:
             if len(self.image_list) >= 5:
                 break;
 
+        self.log_urls(raw_image_list)
+
+        print("length of image list:", len(self.image_list))
         if self.image_list:
-            print("length of image list:", len(self.image_list), "image url:", self.image_list)
+            print("image url:", self.image_list)
             return True
         else:
             return False
@@ -135,9 +159,9 @@ class Draupnir:
                         err_type, err_value, err_traceback = sys.exc_info()
                         formatted_traceback = traceback.format_tb(err_traceback)
 
-                        self.bot.sendMessage(self.DEBUG_CHAT, "An error occured\n" + 
-                                "Couldn't load image\n\n" + 
-                                formatted_traceback[0] + 
+                        self.bot.sendMessage(self.DEBUG_CHAT, "An error occured\n" +
+                                "Couldn't load image\n\n" +
+                                formatted_traceback[0] +
                                 str(e) + "\n\n" +
                                 "Filetype: " + filetype + "\n"
                                 "URL: " + self.image_list[i][0])
