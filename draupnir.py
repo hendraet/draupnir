@@ -85,6 +85,13 @@ class Draupnir:
             logfile.close()
 
     #-----------------------------General--------------------------------------
+    def is_subreddit_private(self, subreddit_string):
+        subreddit = self.reddit.subreddit(subreddit_string)
+        try:
+            return subreddit.subreddit_type != "public"
+        except:
+            return True
+
     def is_subreddit(self, subreddit_string):
         subreddits = []
         try:
@@ -141,62 +148,66 @@ class Draupnir:
         else:
             return False
 
-    def send_image_for_subreddit(self, subreddit, chat_id, method):
-        if self.is_subreddit(subreddit) is not False:
-            got_images = self.generate_images_for_subreddit(subreddit, method)
-
-            if got_images is True:
-
-                image = None
-                for i in range(0, len(self.image_list)):
-                    filetype = self.image_list[i][1]
-                    print("filetype:", filetype)
-                    try:
-                        image = urllib.request.urlopen(self.image_list[i][0])
-                    except Exception as e:
-                        print(e, "\n" + "Failed opening " + str(i+1) + ". image")
-                        err_type, err_value, err_traceback = sys.exc_info()
-                        formatted_traceback = traceback.format_tb(err_traceback)
-
-                        self.bot.sendMessage(
-                            self.DEBUG_CHAT, "An error occured\n" +
-                            "Couldn't load image\n\n" +
-                            formatted_traceback[0] +
-                            str(e) + "\n\n" +
-                            "Filetype: " + filetype + "\n"
-                            "URL: " + self.image_list[i][0])
-                        continue
-                    break
-
-                if image is None:
-                    print("Couldn't open any images")
-                    return
-
-                print("Done opening")
-
-                if filetype == ".gif":
-                    self.bot.sendDocument(chat_id, (subreddit + filetype, image))
-                elif filetype == ".jpg":
-                    self.bot.sendPhoto(chat_id, (subreddit + filetype, image))
-                else:
-                    self.bot.sendMessage(chat_id, "Can't send file because filetype is unknown")
-                    print("Can't send file because filetype is unknown")
-                print("Done sending")
-            else:
-                self.bot.sendMessage(chat_id, "Couldn't load any images from this subreddit")
-                print("Couldn't load any images")
-
-        else:
+    def send_image_for_subreddit(self, subreddit_string, chat_id, method):
+        if self.is_subreddit(subreddit_string) is False:
             self.bot.sendMessage(chat_id, "No subreddits with this name")
             print("No subreddits with this name")
+            return
+
+        if self.is_subreddit_private(subreddit_string):
+            self.bot.sendMessage(chat_id, "Cannot retrieve picture, the subreddit appears to be private.")
+            print("private subreddit")
+            return
+
+        got_images = self.generate_images_for_subreddit(subreddit_string, method)
+
+        if got_images is True:
+
+            image = None
+            for i in range(0, len(self.image_list)):
+                filetype = self.image_list[i][1]
+                print("filetype:", filetype)
+                try:
+                    image = urllib.request.urlopen(self.image_list[i][0])
+                except Exception as e:
+                    print(e, "\n" + "Failed opening " + str(i+1) + ". image")
+                    err_type, err_value, err_traceback = sys.exc_info()
+                    formatted_traceback = traceback.format_tb(err_traceback)
+
+                    self.bot.sendMessage(
+                        self.DEBUG_CHAT, "An error occured\n" +
+                        "Couldn't load image\n\n" +
+                        formatted_traceback[0] +
+                        str(e) + "\n\n" +
+                        "Filetype: " + filetype + "\n"
+                        "URL: " + self.image_list[i][0])
+                    continue
+                break
+
+            if image is None:
+                print("Couldn't open any images")
+                return
+
+            print("Done opening")
+
+            if filetype == ".gif":
+                self.bot.sendDocument(chat_id, (subreddit_string + filetype, image))
+            elif filetype == ".jpg":
+                self.bot.sendPhoto(chat_id, (subreddit_string + filetype, image))
+            else:
+                self.bot.sendMessage(chat_id, "Can't send file because filetype is unknown")
+                print("Can't send file because filetype is unknown")
+            print("Done sending")
+        else:
+            self.bot.sendMessage(chat_id, "Couldn't load any images from this subreddit")
+            print("Couldn't load any images")
 
     def parse_message(self, message):
         #remove everything left of the command
-        message = message.split("/",1)[1]
+        message = message.split("/", 1)[1]
         #remove everything right of the command
         message = message.split()[0]
         arg_list = message.split("/")
-        print(arg_list)
         if len(arg_list) == 2 and (arg_list[1] == "hot" or arg_list[1] == "all"):
             return arg_list[0], arg_list[1]
         else:
