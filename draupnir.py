@@ -191,8 +191,12 @@ class Draupnir:
             print("No subreddits with this name")
 
     def parse_message(self, message):
-        message = message.lstrip("/")
+        #remove everything left of the command
+        message = message.split("/",1)[1]
+        #remove everything right of the command
+        message = message.split()[0]
         arg_list = message.split("/")
+        print(arg_list)
         if len(arg_list) == 2 and (arg_list[1] == "hot" or arg_list[1] == "all"):
             return arg_list[0], arg_list[1]
         else:
